@@ -30,6 +30,7 @@
     "sha.js": "^2.4.11"
   },
   "devDependencies": {
+    "@amanda-mitchell/semantic-release-npm-multiple": "^3.17.0",
     "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@types/crc": "^3.8.3",

@@ -17,6 +17,7 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,7 +31,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
-          registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -41,14 +41,39 @@ jobs:
       - name: Run test
         run: yarn test
 
-      - name: Dry-run release
+      - name: Configure .releaserc
         run: |
+          BRANCH_CONFIG='[{ "name": "${{ github.ref_name }}", "prerelease": "beta", "channel": "beta" }, "release"]'
           if [ "${{ github.ref_name }}" = "main" ]; then
-            echo '{ "branches": [ "${{ github.ref_name }}", "release" ]}' > .releaserc;
-          else
-            echo '{ "branches": [{ "name": "${{ github.ref_name }}", "prerelease": "beta", "channel": "beta" }, "release" ]}' > .releaserc;
+            BRANCH_CONFIG='[{ "name": "main", "prerelease": "beta", "channel": "beta" }, "release"]'
           fi
-          npx semantic-release --dry-run
+
+          cat > .releaserc << EOF
+          {
+            "branches": $BRANCH_CONFIG,
+            "plugins": [
+              "@semantic-release/commit-analyzer",
+              "@semantic-release/release-notes-generator",
+              [
+                "@amanda-mitchell/semantic-release-npm-multiple",
+                {
+                  "registries": {
+                    "npmjs": {},
+                    "github": {}
+                  }
+                }
+              ],
+              "@semantic-release/github"
+            ]
+          }
+          EOF
+
+      - name: Dry-run release
+        run: npx semantic-release --dry-run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GH_TOKEN: ${{ github.token }}
+          NPMJS_NPM_CONFIG_REGISTRY: https://registry.npmjs.org
+          NPMJS_NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_NPM_CONFIG_REGISTRY: https://npm.pkg.github.com
+          GITHUB_NPM_TOKEN: ${{ github.token }}

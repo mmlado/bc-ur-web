@@ -31,9 +31,6 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Install semantic-release-npm-multiple plugin
-        run: yarn add --dev @amanda-mitchell/semantic-release-npm-multiple
-
       - name: Run build
         run: yarn build
 

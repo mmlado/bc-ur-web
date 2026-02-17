@@ -41,6 +41,13 @@ jobs:
       - name: Run test
         run: yarn test
 
+      - name: Install jq
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y jq
+          fi
+
       - name: Configure .releaserc
         run: |
           BRANCH_CONFIG='[{ "name": "${{ github.ref_name }}", "prerelease": "beta", "channel": "beta" }, "release"]'
@@ -48,25 +55,9 @@ jobs:
             BRANCH_CONFIG='[{ "name": "main", "prerelease": "beta", "channel": "beta" }, "release"]'
           fi
 
-          cat > .releaserc << EOF
-          {
-            "branches": $BRANCH_CONFIG,
-            "plugins": [
-              "@semantic-release/commit-analyzer",
-              "@semantic-release/release-notes-generator",
-              [
-                "@amanda-mitchell/semantic-release-npm-multiple",
-                {
-                  "registries": {
-                    "npmjs": {},
-                    "github": {}
-                  }
-                }
-              ],
-              "@semantic-release/github"
-            ]
-          }
-          EOF
+          # Patch only the branches field in the existing .releaserc
+          jq --argjson branches "$BRANCH_CONFIG" '.branches = $branches' .releaserc > .releaserc.dry-run
+          mv .releaserc.dry-run .releaserc
 
       - name: Dry-run release
         run: npx semantic-release --dry-run

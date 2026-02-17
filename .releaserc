@@ -1,3 +1,17 @@
 {
-  "branches": [{ "name": "main", "prerelease": "beta", "channel": "beta" }, "release"]
+  "branches": [{ "name": "main", "prerelease": "beta", "channel": "beta" }, "release"],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+      "@amanda-mitchell/semantic-release-npm-multiple",
+      {
+        "registries": {
+          "npmjs": {},
+          "github": {}
+        }
+      }
+    ],
+    "@semantic-release/github"
+  ]
 }

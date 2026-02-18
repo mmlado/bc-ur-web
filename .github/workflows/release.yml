@@ -18,6 +18,7 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
+      packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,8 +26,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: '24.x'
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -37,8 +37,11 @@ jobs:
       - name: Run test
         run: yarn test
 
-      - name: Publish to NPM and create a GitHub release
+      - name: Publish and create a GitHub release
         run: npx semantic-release
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GH_TOKEN: ${{ github.token }}
+          NPMJS_NPM_CONFIG_REGISTRY: https://registry.npmjs.org
+          NPMJS_NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_NPM_CONFIG_REGISTRY: https://npm.pkg.github.com
+          GITHUB_NPM_TOKEN: ${{ github.token }}

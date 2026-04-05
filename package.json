@@ -47,15 +47,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ngraveio/bc-ur.git"
+    "url": "git+https://github.com/mmlado/bc-ur.git"
   },
   "keywords": [
     "bc-ur"
   ],
   "bugs": {
-    "url": "https://github.com/ngraveio/bc-ur/issues"
+    "url": "https://github.com/mmlado/bc-ur/issues"
   },
-  "homepage": "https://github.com/ngraveio/bc-ur#readme",
+  "homepage": "https://github.com/mmlado/bc-ur#readme",
   "tshy": {
     "exports": {
       "./package.json": "./package.json",

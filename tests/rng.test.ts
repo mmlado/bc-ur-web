@@ -17,7 +17,7 @@ describe("Xoshiro rng", () => {
       63, 34, 32, 3, 17, 62, 40, 98, 82, 89, 24, 43, 85, 39, 15, 3, 99, 29, 20,
       42, 27, 10, 85, 66, 50, 35, 69, 70, 70, 74, 30, 13, 72, 54, 11, 5, 70, 55,
       91, 52, 10, 43, 43, 52,
-    ];
+    ].map(BigInt);
 
     expect(numbers).toEqual(expectedNumbers);
   });
@@ -35,7 +35,7 @@ describe("Xoshiro rng", () => {
       55, 57, 77, 76, 75, 47, 53, 76, 9, 91, 14, 69, 3, 95, 11, 73, 20, 99, 68,
       61, 3, 98, 36, 98, 56, 65, 14, 80, 74, 57, 63, 68, 51, 56, 24, 39, 53, 80,
       57, 51, 81, 3, 1, 30,
-    ];
+    ].map(BigInt);
 
     expect(numbers).toEqual(expectedNumbers);
   });
@@ -55,7 +55,7 @@ describe("Xoshiro rng", () => {
   });
 });
 
-describe.only("Shuffle", () => {
+describe("Shuffle", () => {
   test("random shuffle", () => {
     const rng = new Xoshiro(stringToUint8Array("Wolf"));
     const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -166,8 +166,8 @@ describe("Degree", () => {
     const message = makeMessage(1024);
     const fragmentLength = findNominalFragmentLength(
       message.length,
-      10,
-      100
+      100,
+      10
     );
     const fragments = partitionMessage(message, fragmentLength);
 
@@ -197,8 +197,8 @@ describe("Fragments", () => {
     const checksum = getCRC(message);
     const fragmentLength = findNominalFragmentLength(
       message.length,
-      10,
-      100
+      100,
+      10
     );
     const fragments = partitionMessage(message, fragmentLength);
 

@@ -1,4 +1,4 @@
-import { stringToUint8Array, uint8ArrayToHex } from "../src/helpers/uintArrayHelper";
+import { hexToUint8Array, stringToUint8Array, uint8ArrayToHex } from "../src/helpers/uintArrayHelper";
 import { RegistryItemBase, registryItemFactory } from "../src/classes/RegistryItem";
 import { CborEncoding } from "../src/encodingMethods/CborEncoding";
 import { User, UserCollection } from "../src/test.utils";
@@ -78,16 +78,6 @@ describe("CBOR Encoder", () => {
       const encoded = cbor.encode(testSet);
       const decoded = cbor.decode(encoded);
       expect(decoded).toEqual(testSet);
-    });
-
-    it("should encode a Buffer (only in nodejs)", () => {
-      const testBuffer = Buffer.from([1, 2, 3, 4]);
-      const encoded = cbor.encode(testBuffer);
-      const decoded = cbor.decode(encoded);
-      //@ts-ignore
-      expect(uint8ArrayToHex(decoded)).toEqual(testBuffer.toString("hex"));
-      // uInt8Array is converted to buffer after decoding
-      expect(decoded).toEqual(Uint8Array.from(testBuffer));
     });
 
     it("should encode a UInt8Array but decode as Buffer ( only in nodejs )", () => {
@@ -183,7 +173,7 @@ describe("CBOR Encoder", () => {
     });
 
     it("should decode to correct instace from CBOR", () => {
-      const encoded = Buffer.from("d87ba163666f6f63626172", "hex");
+      const encoded = hexToUint8Array("d87ba163666f6f63626172");
       const decoded = cbor.decode(encoded);
 
       expect(decoded).toBeInstanceOf(MyRegistryItem);
@@ -299,7 +289,7 @@ describe("CBOR Encoder", () => {
         // 111({"id": 1, "name": "İrfan Bilaloğlu"})
         const user = "d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75";
 
-        const decoded = cbor.decode(Buffer.from(user, "hex"));
+        const decoded = cbor.decode(hexToUint8Array(user));
 
         expect(decoded).toBeInstanceOf(RegistryItemBase);
         expect(decoded.type.tag).toBe(111);
@@ -311,7 +301,7 @@ describe("CBOR Encoder", () => {
         const userCollection =
           "d870a2646e616d656d4d7920436f6c6c656374696f6e65757365727382d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75d86fa262696402646e616d6572506965746572205579747465727370726f74";
 
-        const decoded = cbor.decode(Buffer.from(userCollection, "hex"));
+        const decoded = cbor.decode(hexToUint8Array(userCollection));
 
         expect(decoded).toBeInstanceOf(RegistryItemBase);
         expect(decoded.type.tag).toBe(112);

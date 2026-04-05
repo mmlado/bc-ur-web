@@ -2,12 +2,11 @@ import { URRegistryClass, UrRegistry } from "../registry.js";
 import { RegistryItem, RegistryItemClass, registryItemFactory } from "../classes/RegistryItem.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
-import { Buffer as BufferPolyfill } from "buffer/";
 
 import {
   DecodeOptions,
   EncodeOptions,
-  decode, encode, Tag, registerEncoder
+  decode, encode, Tag
 } from "../wrappers/cbor2.js";
 
 interface inputOptions {
@@ -20,36 +19,6 @@ interface decodeOptions {
   enforceType?: RegistryItemClass | string;
   cborLibOptions?: DecodeOptions;
 }
-
-// For Node.js we are going to convert buffer into Uint8Array
-// This code should only run in Node.js
-const isBufferDefined = typeof Buffer !== "undefined";
-if (isBufferDefined) {
-  registerEncoder(Buffer, (b, _writer, _options) => {
-    // Conver buffer to Uint8Array
-    const u8 = new Uint8Array(b);
-    // This is a major type ( MT.BYTE_STRING ) so no tag is given
-    return [NaN, u8];
-  });
-}
-
-if (globalThis?.Buffer !== undefined) {
-  registerEncoder(globalThis.Buffer, (b, _writer, _options) => {
-    // Conver buffer to Uint8Array
-    const u8 = new Uint8Array(b);
-    // This is a major type ( MT.BYTE_STRING ) so no tag is given
-    return [NaN, u8];
-  });
-}
-
-// Register BufferPolyfill for non-node environments
-registerEncoder(BufferPolyfill, (b, _writer, _options) => {
-  // Conver buffer to Uint8Array
-  const u8 = new Uint8Array(b);
-  // This is a major type ( MT.BYTE_STRING ) so no tag is given
-  return [NaN, u8];
-});
-
 
 export class CborEncoding<T extends RegistryItem>
   implements IEncodingMethod<T, Uint8Array>
@@ -169,7 +138,7 @@ function forceType(data: any, enforceType: RegistryItemClass): RegistryItem {
  * @returns 
  */
 function tag2registryItem(unkownTag: Tag): RegistryItem {
-  const tag = unkownTag.tag;
+  const tag = toRegistryTagNumber(unkownTag.tag);
   const data = unkownTag.contents;
 
   const registryItem = UrRegistry.queryByTag(tag);
@@ -193,6 +162,18 @@ function tag2registryItem(unkownTag: Tag): RegistryItem {
   deepSearchObject(unknownItem.data);
 
   return unknownItem;
+}
+
+function toRegistryTagNumber(tag: Tag["tag"]): number {
+  if (typeof tag === "bigint") {
+    const converted = Number(tag);
+    if (!Number.isSafeInteger(converted)) {
+      throw new Error(`CBOR tag ${tag.toString()} exceeds JavaScript safe integer range`);
+    }
+    return converted;
+  }
+
+  return Number(tag);
 }
 
 /**

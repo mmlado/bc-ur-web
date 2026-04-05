@@ -1,4 +1,4 @@
-import { uint8ArrayToHex } from "../src/helpers/uintArrayHelper";
+import { hexToUint8Array, uint8ArrayToHex } from "../src/helpers/uintArrayHelper";
 import { registryItemFactory } from "../src/classes/RegistryItem";
 import { CborEncoding } from "../src/encodingMethods/CborEncoding";
 
@@ -64,6 +64,16 @@ describe("Registry Items with KeyMap", () => {
     cbor.registry.addItem(CoinInfoIgnoreKeys);
   });
 
+  afterEach(() => {
+    CoinInfo.allowKeysNotInMap = true;
+    if (cbor.registry.queryByURType(CoinInfoIgnoreKeys.URType)) {
+      cbor.registry.removeItem(CoinInfoIgnoreKeys);
+    }
+    if (cbor.registry.queryByURType(CoinInfo.URType)) {
+      cbor.registry.removeItem(CoinInfo);
+    }
+  });
+
   it("should convert string keys into integers in cbor encoded data", () => {
     const coininfo = new CoinInfo({ type: 5, network: 3 });
     const encoded = cbor.encode(coininfo);
@@ -83,9 +93,8 @@ describe("Registry Items with KeyMap", () => {
   it("should decode to instance if enforced type is given. decoding keys that are not defined in the keyMap", () => {
     // { type: 5, network: 3, anahtar: "deneme" }
     cbor.registry.removeItem(CoinInfo);
-    const encoded = Buffer.from(
+    const encoded = hexToUint8Array(
       "d99d71a30105020367616e61687461726664656e656d65",
-      "hex"
     );
 
     const decoded = cbor.decode(encoded, {enforceType: CoinInfo});
@@ -98,9 +107,8 @@ describe("Registry Items with KeyMap", () => {
     // Make the CoinInfoIgnoreKeys to not allow keys that are not in the map
     CoinInfo.allowKeysNotInMap = false;
     // { type: 5, network: 3, anahtar: "deneme" }
-    const encoded = Buffer.from(
+    const encoded = hexToUint8Array(
       "d99d71a30105020367616e61687461726664656e656d65",
-      "hex"
     );
 
     const decoded = cbor.decode(encoded, {enforceType: CoinInfo});
@@ -133,11 +141,6 @@ describe("Registry Items with KeyMap", () => {
     const encoded = cbor.encode(coininfo);
     const decoded = cbor.decode(encoded);
     expect(decoded).toEqual(new CoinInfoIgnoreKeys({ type: 5, network: 3 }));
-  });
-
-  afterAll(() => {
-    // Remove items from registry
-    cbor.registry.removeItem(CoinInfo);
   });
 });
 
@@ -210,7 +213,7 @@ describe("Registry items with post and pre processors", () => {
 
   it("should run postprocessor after decoding", () => {
     // // 123({1: "hello", 2: 12, 3: 2})
-    const encoded = Buffer.from("d87ba3016568656c6c6f020c0302", "hex");
+    const encoded = hexToUint8Array("d87ba3016568656c6c6f020c0302");
     const decoded = cbor.decode(encoded);
     expect(decoded).toBeInstanceOf(MyRegistryItem);
 

@@ -46,13 +46,13 @@ A JavaScript/TypeScript library implementing BC-UR encoding, based on the [C++ r
 ## Installation
 
 ```bash
-yarn add @ngraveio/bc-ur
+yarn add @qrkit/bc-ur
 ```
 
 ---
 
 ## Quick Start
-> ⚠️ **Warning**: `Buffer` instances are encoded and decoded as `Uint8Array` for compatibility. Convert `Uint8Array` back to `Buffer` using `Buffer.from(uint8Array)` in the `postCbor` function. See the [example](#3-postcbor) below for details.
+> This package is browser-native and uses `Uint8Array` as the binary type. In Node.js, `Buffer` values are treated as `Uint8Array` during CBOR encode/decode.
 
 
 ### Encoding and Decoding with Registry Items
@@ -62,7 +62,7 @@ The quickest way to get started is by working with registry items. Registry item
 #### Encode a Registry Item to a UR
 
 ```ts
-import { registryItemFactory, UR, UrRegistry } from '@ngraveio/bc-ur';
+import { registryItemFactory, UR, UrRegistry } from '@qrkit/bc-ur';
 
 // Create a registry item for a user
 const User = registryItemFactory({
@@ -170,7 +170,7 @@ You can create a Registry Item using the `registryItemFactory` function. This fu
 ### Quick Start Example
 
 ```ts
-import { registryItemFactory, UrRegistry } from '@ngraveio/bc-ur';
+import { registryItemFactory, UrRegistry } from '@qrkit/bc-ur';
 
 // Create a Registry Item
 const SimpleItem = registryItemFactory({
@@ -331,7 +331,7 @@ class PostProcessedItem extends registryItemFactory({
     const processedData = super.postCBOR(decodedData);
     // Transform a field after decoding
     processedData.name = processedData.name.toUpperCase();
-    processedData.bytes = Buffer.from(processedData.bytes);
+    processedData.bytes = new Uint8Array(processedData.bytes);
     return processedData;
   }
 }
@@ -409,7 +409,7 @@ You can add new items to the registry using the `UrRegistry.addItem` method. Thi
 **Example:**
 
 ```ts
-import { registryItemFactory, UrRegistry } from '@ngraveio/bc-ur';
+import { registryItemFactory, UrRegistry } from '@qrkit/bc-ur';
 
 // Define a new Registry Item
 const CustomItem = registryItemFactory({
@@ -437,7 +437,7 @@ You can query items from the registry using the `UrRegistry.queryByTag` or `UrRe
 **Example:**
 
 ```ts
-import { UrRegistry } from '@ngraveio/bc-ur';
+import { UrRegistry } from '@qrkit/bc-ur';
 
 // Query an item by tag
 const CustomItemClass = UrRegistry.queryByTag(999);
@@ -459,7 +459,7 @@ The Registry System also updates the CBOR registry so that CBOR tags can be dire
 **Example:**
 
 ```ts
-import { CborEncoding, UrRegistry, registryItemFactory } from '@ngraveio/bc-ur';
+import { CborEncoding, UrRegistry, registryItemFactory } from '@qrkit/bc-ur';
 
 // Define a new Registry Item
 const CustomItem = registryItemFactory({
@@ -502,7 +502,7 @@ The constructor can create a `UR` instance from either a `RegistryItem` or an ob
 Example:
 
 ```ts
-import { UR, registryItemFactory } from '@ngraveio/bc-ur';
+import { UR, registryItemFactory } from '@qrkit/bc-ur';
 
 const User = registryItemFactory({
   tag: 111,
@@ -733,7 +733,7 @@ Multipart URs use **Fountain Codes** to ensure reliable transmission of large da
 #### Encoding Multipart URs
 
 ```ts
-import { UR, UrFountainEncoder } from '@ngraveio/bc-ur';
+import { UR, UrFountainEncoder } from '@qrkit/bc-ur';
 
 const testPayload = {
   "id": "123",
@@ -775,7 +775,7 @@ while (!stop) {
 If you have all the parts, you can decode them into the original UR object at once:
 
 ```ts
-import { UrFountainDecoder } from '@ngraveio/bc-ur';
+import { UrFountainDecoder } from '@qrkit/bc-ur';
 
 // If we have all the fragments, we can decode them into the original UR object
 const decoder = new UrFountainDecoder(fragments);
@@ -789,7 +789,7 @@ const decoded = resultUr.decode();
 For continuous decoding:
 
 ```ts
-import { UrFountainDecoder } from '@ngraveio/bc-ur';
+import { UrFountainDecoder } from '@qrkit/bc-ur';
 
 // Create the decoder object
 const decoder = new UrFountainDecoder();
@@ -854,7 +854,7 @@ The `UrFountainEncoder` class is used to encode data into Multipart URs. It take
 **Example Usage:**
 
 ```ts
-import { UR, UrFountainEncoder } from '@ngraveio/bc-ur';
+import { UR, UrFountainEncoder } from '@qrkit/bc-ur';
 
 const testPayload = {
   "id": "123",
@@ -883,7 +883,7 @@ The `UrFountainDecoder` class is used to decode Multipart URs. It tracks the sta
 **Example Usage:**
 
 ```ts
-import { UrFountainDecoder } from '@ngraveio/bc-ur';
+import { UrFountainDecoder } from '@qrkit/bc-ur';
 
 const decoder = new UrFountainDecoder();
 
@@ -918,7 +918,7 @@ if (decoder.isSuccessful()) {
 
 ### Dual Packaging
 
-This library is distributed in two formats: **ESM (ECMAScript Module)** and **CommonJS (CJS)**. The default version is ESM, which is utilized in the examples provided above.
+This library is distributed in two formats: **ESM (ECMAScript Module)** and **CommonJS (CJS)**. The default path for modern bundlers and browsers is ESM.
 
 ```
 dist
@@ -932,16 +932,19 @@ dist
 ```
 
 
-Each `package.json` file within the subdirectories specifies the corresponding `type` property: `"module"` for ESM and `"commonjs"` for CJS. This enables Node.js to correctly interpret the file type based on the `.js` extension.
+The package `exports` field points `import` consumers to `dist/esm` and `require` consumers to `dist/commonjs`.
 
-The **CommonJS** format is included for backward compatibility with older versions of Node.js. However, it is **not recommended** for use in browser environments.
+The **CommonJS** format is included for Node.js compatibility. Browser-oriented consumers should use the ESM entrypoint through normal package imports.
 
-Due to the library’s reliance on the **ESM-only** [CBOR2](https://github.com/hildjj/cbor2) library, the CommonJS version is created using **Rollup**. This process bundles the CBOR2 library into a single file and converts it to the CommonJS format.
+Due to the library’s reliance on [CBOR2](https://github.com/hildjj/cbor2), the CommonJS build is created with **Rollup**. The ESM build stays inside the `dist/esm` tree and does not re-export through the CommonJS output.
 
-To mitigate the [Dual Package Hazard](https://nodejs.org/docs/latest-v18.x/api/packages.html#dual-package-hazard), the ESM version of this library also uses a bundled version of the CBOR2 library. This ensures consistency by maintaining a single source of truth for CBOR tag definitions.
+The runtime path is designed to be browser-native:
+- no `Buffer` dependency in library runtime code
+- no `process` dependency in library runtime code
+- `Uint8Array` is the binary interchange type
 
 **Important Note:**
-> Adding CBOR types via the CBOR2 library will not affect the BC-UR library, as the BC-UR library uses the bundled version of CBOR2.
+> Adding CBOR types via the upstream CBOR2 package will not affect this library automatically, because BC-UR ships with its own built wrapper output.
 
 
 More details about CBOR2 and dual packaging here: https://github.com/hildjj/cbor2/pull/57
@@ -982,17 +985,12 @@ You need to have Node.js **version 20** or higher installed on your system to *p
 - `yarn test`
 - `yarn pack`
 
-The build is using Rollup to convert ESM only packages to CommonJS.
-You will find those in
-- `src/wrappers`:
-  - `cbor2`
-
-Rollup inject the ESM converted to CommonJs version of the CBOR2 library into the CommonJS version of the BC-UR library.
-
-In order to prevent the dual package hazard, the ESM version of the BC-UR library is also using the bundled version of the CBOR2 library.
+The build uses Rollup to create the CommonJS wrapper for CBOR2.
+You will find the wrapper sources in:
+- `src/wrappers/cbor2.ts`
+- `src/wrappers/cbor2-cjs.cts`
+- `src/wrappers/cbor2Wrapper.ts`
 
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
-
-

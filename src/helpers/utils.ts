@@ -1,6 +1,5 @@
-//@ts-ignore
-import { crc32 } from "crc";
 import Xoshiro from "../xoshiro.js";
+import { crc32 } from "./crc32.js";
 import { stringToUint8Array, toUint8Array } from "./uintArrayHelper.js";
 
 export const partition = (s: string, n: number): string[] =>
@@ -134,6 +133,3 @@ export function assert(condition: boolean, message?: string): void {
     throw new Error(message || "Assertion failed");
   }
 }
-
-// Check if we are in a Node.js environment
-export const isNode = typeof process !== 'undefined' && process.versions != null && process.versions.node != null;

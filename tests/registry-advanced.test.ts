@@ -1,9 +1,7 @@
-import { uint8ArrayToHex } from "../src/helpers/uintArrayHelper";
+import { hexToUint8Array, uint8ArrayToHex } from "../src/helpers/uintArrayHelper";
 import { registryItemFactory } from "../src/classes/RegistryItem";
 import { CborEncoding } from "../src/encodingMethods/CborEncoding";
 import { User, UserCollection } from "../src/test.utils";
-import exp from "constants";
-
 const cbor = new CborEncoding();
 
 describe("Advanced Registry Items", () => {
@@ -34,9 +32,8 @@ describe("Advanced Registry Items", () => {
     });
 
     it("should decode to correct instance", () => {
-      const encoded = Buffer.from(
+      const encoded = hexToUint8Array(
         "d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75",
-        "hex"
       );
       const decoded = cbor.decode(encoded);
       expect(decoded).toBeInstanceOf(User);
@@ -65,7 +62,7 @@ describe("Advanced Registry Items", () => {
       expect(item.toHex()).toEqual(expected);
     });
     
-    it.only("should decode from hex to correct instance", () => {
+    it("should decode from hex to correct instance", () => {
       const hexData = "a262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75";
       const decoded = User.fromHex(hexData);
 
@@ -91,7 +88,7 @@ describe("Advanced Registry Items", () => {
 
     it("should throw error when decoding if fields are wrong type", () => {
       // 111({"id": "1", "name": 4})
-      const encoded = Buffer.from("d86fa26269646131646e616d6504", "hex");
+      const encoded = hexToUint8Array("d86fa26269646131646e616d6504");
       expect(() => cbor.decode(encoded)).toThrow();
     });
   });
@@ -105,9 +102,8 @@ describe("Advanced Registry Items", () => {
     });
 
     it("should decode to the correct RegistryItem when it's already that class and additionally the enforced type is given", () => {
-      const encoded = Buffer.from(
+      const encoded = hexToUint8Array(
         "d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75",
-        "hex"
       );
       // It will already decode to User instance and we will force it again
       const decoded = cbor.decode(encoded, {enforceType: User});
@@ -117,9 +113,8 @@ describe("Advanced Registry Items", () => {
 
     it("should decode to instance if enforced type is given even if top level is not a tag", () => {
       // {"id": 1, "name": "İrfan Bilaloğlu"}
-      const encoded = Buffer.from(
+      const encoded = hexToUint8Array(
         "a262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75",
-        "hex"
       );
       const decoded = cbor.decode(encoded, {enforceType: User});
 
@@ -135,7 +130,7 @@ describe("Advanced Registry Items", () => {
 
     it("should throw error if validation for enforced type fails", () => {
       // 111({"id": "1", "name": 4})
-      const encoded = Buffer.from("d86fa26269646131646e616d6504", "hex");
+      const encoded = hexToUint8Array("d86fa26269646131646e616d6504");
       expect(() => cbor.decode(encoded, {enforceType: User})).toThrow();
     });
   });
@@ -159,9 +154,8 @@ describe("Advanced Registry Items", () => {
 
     it("should decode to correct instance", () => {
       // 112({"name": "My Collection", "users": [111({"id": 1, "name": "İrfan Bilaloğlu"}), 111({"id": 2, "name": "Pieter Uyttersprot"})]})
-      const encoded = Buffer.from(
+      const encoded = hexToUint8Array(
         "d870a2646e616d656d4d7920436f6c6c656374696f6e65757365727382d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75d86fa262696402646e616d6572506965746572205579747465727370726f74",
-        "hex"
       );
       const decoded = cbor.decode(encoded);
       expect(decoded).toBeInstanceOf(UserCollection);

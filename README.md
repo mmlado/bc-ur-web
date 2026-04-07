@@ -9,7 +9,7 @@ A JavaScript/TypeScript library implementing BC-UR encoding, based on the [C++ r
 - 🔑 **Registry System**: Built-in support for CBOR tag registration and extendable registry items.
 - 📜 **UR as Communication Layer**: Simplified encoding/decoding from CBOR tags to registry items using UR.
 - 🚀 **Fountain Encoder/Decoder**: Reliable multipart UR support for lossy or air-gapped environments.
-- 🌐 **Dual Packaging**: Native support for ESM and CJS modules.
+- 🌐 **Browser-Native ESM**: Pure ESM package targeting modern browsers and bundlers.
 - 🛠️ **CBOR2 Integration**: Enhanced CBOR encoding/decoding capabilities.
 
 ---
@@ -46,7 +46,7 @@ A JavaScript/TypeScript library implementing BC-UR encoding, based on the [C++ r
 ## Installation
 
 ```bash
-yarn add @qrkit/bc-ur
+yarn add @qrkit/bc-ur-web
 ```
 
 ---
@@ -62,7 +62,7 @@ The quickest way to get started is by working with registry items. Registry item
 #### Encode a Registry Item to a UR
 
 ```ts
-import { registryItemFactory, UR, UrRegistry } from '@qrkit/bc-ur';
+import { registryItemFactory, UR, UrRegistry } from '@qrkit/bc-ur-web';
 
 // Create a registry item for a user
 const User = registryItemFactory({
@@ -170,7 +170,7 @@ You can create a Registry Item using the `registryItemFactory` function. This fu
 ### Quick Start Example
 
 ```ts
-import { registryItemFactory, UrRegistry } from '@qrkit/bc-ur';
+import { registryItemFactory, UrRegistry } from '@qrkit/bc-ur-web';
 
 // Create a Registry Item
 const SimpleItem = registryItemFactory({
@@ -409,7 +409,7 @@ You can add new items to the registry using the `UrRegistry.addItem` method. Thi
 **Example:**
 
 ```ts
-import { registryItemFactory, UrRegistry } from '@qrkit/bc-ur';
+import { registryItemFactory, UrRegistry } from '@qrkit/bc-ur-web';
 
 // Define a new Registry Item
 const CustomItem = registryItemFactory({
@@ -437,7 +437,7 @@ You can query items from the registry using the `UrRegistry.queryByTag` or `UrRe
 **Example:**
 
 ```ts
-import { UrRegistry } from '@qrkit/bc-ur';
+import { UrRegistry } from '@qrkit/bc-ur-web';
 
 // Query an item by tag
 const CustomItemClass = UrRegistry.queryByTag(999);
@@ -459,7 +459,7 @@ The Registry System also updates the CBOR registry so that CBOR tags can be dire
 **Example:**
 
 ```ts
-import { CborEncoding, UrRegistry, registryItemFactory } from '@qrkit/bc-ur';
+import { CborEncoding, UrRegistry, registryItemFactory } from '@qrkit/bc-ur-web';
 
 // Define a new Registry Item
 const CustomItem = registryItemFactory({
@@ -502,7 +502,7 @@ The constructor can create a `UR` instance from either a `RegistryItem` or an ob
 Example:
 
 ```ts
-import { UR, registryItemFactory } from '@qrkit/bc-ur';
+import { UR, registryItemFactory } from '@qrkit/bc-ur-web';
 
 const User = registryItemFactory({
   tag: 111,
@@ -733,7 +733,7 @@ Multipart URs use **Fountain Codes** to ensure reliable transmission of large da
 #### Encoding Multipart URs
 
 ```ts
-import { UR, UrFountainEncoder } from '@qrkit/bc-ur';
+import { UR, UrFountainEncoder } from '@qrkit/bc-ur-web';
 
 const testPayload = {
   "id": "123",
@@ -775,7 +775,7 @@ while (!stop) {
 If you have all the parts, you can decode them into the original UR object at once:
 
 ```ts
-import { UrFountainDecoder } from '@qrkit/bc-ur';
+import { UrFountainDecoder } from '@qrkit/bc-ur-web';
 
 // If we have all the fragments, we can decode them into the original UR object
 const decoder = new UrFountainDecoder(fragments);
@@ -789,7 +789,7 @@ const decoded = resultUr.decode();
 For continuous decoding:
 
 ```ts
-import { UrFountainDecoder } from '@qrkit/bc-ur';
+import { UrFountainDecoder } from '@qrkit/bc-ur-web';
 
 // Create the decoder object
 const decoder = new UrFountainDecoder();
@@ -854,7 +854,7 @@ The `UrFountainEncoder` class is used to encode data into Multipart URs. It take
 **Example Usage:**
 
 ```ts
-import { UR, UrFountainEncoder } from '@qrkit/bc-ur';
+import { UR, UrFountainEncoder } from '@qrkit/bc-ur-web';
 
 const testPayload = {
   "id": "123",
@@ -883,7 +883,7 @@ The `UrFountainDecoder` class is used to decode Multipart URs. It tracks the sta
 **Example Usage:**
 
 ```ts
-import { UrFountainDecoder } from '@qrkit/bc-ur';
+import { UrFountainDecoder } from '@qrkit/bc-ur-web';
 
 const decoder = new UrFountainDecoder();
 
@@ -916,38 +916,25 @@ if (decoder.isSuccessful()) {
 
 ## Technical Choices
 
-### Dual Packaging
+### ESM-Only Package
 
-This library is distributed in two formats: **ESM (ECMAScript Module)** and **CommonJS (CJS)**. The default path for modern bundlers and browsers is ESM.
+This library is distributed as **ESM (ECMAScript Module)** only, targeting modern browsers and bundlers.
 
 ```
 dist
 ├── esm
 │   ├── index.js
 │   ├── package.json
-├── commonjs
-│   ├── index.js
-│   ├── package.json
 └── package.json
 ```
 
-
-The package `exports` field points `import` consumers to `dist/esm` and `require` consumers to `dist/commonjs`.
-
-The **CommonJS** format is included for Node.js compatibility. Browser-oriented consumers should use the ESM entrypoint through normal package imports.
-
-Due to the library’s reliance on [CBOR2](https://github.com/hildjj/cbor2), the CommonJS build is created with **Rollup**. The ESM build stays inside the `dist/esm` tree and does not re-export through the CommonJS output.
-
-The runtime path is designed to be browser-native:
+The runtime is designed to be browser-native:
 - no `Buffer` dependency in library runtime code
 - no `process` dependency in library runtime code
 - `Uint8Array` is the binary interchange type
 
 **Important Note:**
 > Adding CBOR types via the upstream CBOR2 package will not affect this library automatically, because BC-UR ships with its own built wrapper output.
-
-
-More details about CBOR2 and dual packaging here: https://github.com/hildjj/cbor2/pull/57
 
 ---
 
@@ -957,10 +944,6 @@ Because of compatibility issues with the original packages
  - `@keystonehq/alias-sampling` https://www.npmjs.com/package/@keystonehq/alias-sampling
 
  They are included in the source code of this project.
-
-### React-Native
-React native uses *commonjs* versions by default and its Hermes engine does not support `TextDecoder` as of (React Native 77) yet.
-That is why we have `./src/index-react-native.ts` that includes a `TextDecoder` polyfill.
 
 ## Contributing
 
@@ -985,10 +968,9 @@ You need to have Node.js **version 20** or higher installed on your system to *p
 - `yarn test`
 - `yarn pack`
 
-The build uses Rollup to create the CommonJS wrapper for CBOR2.
-You will find the wrapper sources in:
+The build uses [tshy](https://github.com/isaacs/tshy) to produce the ESM output.
+You will find the CBOR2 wrapper sources in:
 - `src/wrappers/cbor2.ts`
-- `src/wrappers/cbor2-cjs.cts`
 - `src/wrappers/cbor2Wrapper.ts`
 
 ## License

@@ -4,21 +4,6 @@ import nodePolyfills from "rollup-plugin-node-polyfills";
 
 export default [
   {
-    input: "./dist/esm/wrappers/cbor2Wrapper.js",
-    output: {
-      file: "dist/commonjs/wrappers/cbor2Wrapper.js",
-      format: "cjs",
-      exports: "auto",
-    },
-    plugins: [
-      resolve({
-        preferBuiltins: false,
-        moduleDirectories: ["node_modules"],
-        exportConditions: ["default", "import", "node"],
-      }),
-    ],
-  },
-  {
     input: "./dist/esm/encodingMethods/bytewords.js",
     output: {
       file: "./dist/web/bytewords.js",
@@ -32,7 +17,7 @@ export default [
         moduleDirectories: ["node_modules"],
         exportConditions: ["default", "import", "node"],
       }),
-      commonjs(), // converts commonjs to esm
+      commonjs(),
     ],
-  },  
+  },
 ];

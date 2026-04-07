@@ -6,6 +6,7 @@
     "rootDir": "./src",
     "outDir": "./dist/esm",
     "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
     "esModuleInterop": true, /** Let's you use default imports */
 
     /** Type options */

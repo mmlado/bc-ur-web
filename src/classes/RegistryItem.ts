@@ -128,7 +128,7 @@ export abstract class RegistryItemBase {
     return this.toUr().getPayloadHex();
   }
 
-  toBytes() {
+  toBytes(): Uint8Array {
     return this.toUr().getPayloadCbor();
   }
 

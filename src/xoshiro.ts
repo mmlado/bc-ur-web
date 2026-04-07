@@ -1,6 +1,7 @@
 import { sha256 } from "./helpers/sha256.js";
 
-export const sha256Hash = (data) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const sha256Hash = (data: any): Uint8Array => {
   return sha256(data);
 };
 

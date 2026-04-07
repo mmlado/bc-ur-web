@@ -89,7 +89,7 @@ export class UR {
   }
 
   // Get Payload in cbor
-  getPayloadCbor() {
+  getPayloadCbor(): Uint8Array {
     return UR.pipeline.decode<Uint8Array>(this.payload, {until: EncodingMethodName.cbor} );
     // TODO: add tag information
   }

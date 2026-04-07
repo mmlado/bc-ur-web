@@ -25,7 +25,7 @@ class FountainBlock {
   }
 
   /** Data */
-  get fragment() {
+  get fragment(): Uint8Array {
     return this._fragment;
   }
 
